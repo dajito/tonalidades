@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entrenador de Armaduras Musicales para Irene Jiménez Ruiz</title>
+    <title>Entrenador de Armaduras Musicales</title>
     <style>
         /* --- ESTILOS GENERALES --- */
         body {
@@ -32,8 +32,6 @@
         h2 { color: #2980b9; }
         p { font-size: 1.1rem; color: #555; line-height: 1.5; }
 
-        /* --- CLASE PARA OCULTAR (CORREGIDA) --- */
-        /* El !important asegura que esto tenga prioridad sobre cualquier otro estilo */
         .hidden { display: none !important; }
 
         /* --- BOTONES --- */
@@ -53,11 +51,23 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .btn:hover { transform: scale(1.02); background-color: #5649c0; }
-        .btn:active { transform: scale(0.98); }
+        .btn:hover:not(:disabled) { transform: scale(1.02); background-color: #5649c0; }
+        .btn:active:not(:disabled) { transform: scale(0.98); }
+        .btn:disabled { cursor: default; opacity: 0.9; }
 
         .btn-secondary { background-color: #00b894; }
-        .btn-secondary:hover { background-color: #00a383; }
+        .btn-secondary:hover:not(:disabled) { background-color: #00a383; }
+
+        /* ESTILOS DE FEEDBACK (Correcto/Incorrecto) */
+        .btn.correct {
+            background-color: #27ae60 !important; /* Verde */
+            box-shadow: 0 0 10px #2ecc71;
+            transform: scale(1.02);
+        }
+        .btn.incorrect {
+            background-color: #e74c3c !important; /* Rojo */
+            opacity: 0.6;
+        }
 
         .btn-help {
             background-color: #f1c40f;
@@ -78,6 +88,14 @@
             cursor: pointer;
         }
         .btn-help:hover { background-color: #f39c12; transform: rotate(10deg); }
+
+        /* --- MENSAJE DE FEEDBACK --- */
+        #feedback-message {
+            font-weight: bold;
+            font-size: 1.2rem;
+            min-height: 1.5rem; /* Para que no salte el contenido */
+            margin: 10px 0;
+        }
 
         /* --- UNICORNIO --- */
         #unicorn-container {
@@ -107,7 +125,7 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.6);
-            display: flex; /* Este display ahora no sobreescribirá al .hidden gracias al !important */
+            display: flex; 
             justify-content: center;
             align-items: center;
             z-index: 100;
@@ -156,8 +174,8 @@
 
 <div class="container">
     <div id="start-screen">
-        <h1>🎵 Armaduras Musicales</h1>
-        <p>¡Irene, demuestra cuánto sabes de música!</p>
+        <h1>🎵 Maestro de Armaduras</h1>
+        <p>¡Demuestra cuánto sabes de música!</p>
         <p>Si sacas un 10... ¡habrá sorpresa! 🦄</p>
         <br>
         <button class="btn" onclick="startGame('normal')">🎲 Veo Armadura -> Digo Tono</button>
@@ -166,7 +184,10 @@
 
     <div id="quiz-screen" class="hidden">
         <p id="question-counter" style="color: #888; font-size: 0.9rem;">Pregunta 1 de 10</p>
-        <h2 id="question-text" style="font-size: 1.8rem; margin: 20px 0;">Pregunta...</h2>
+        <h2 id="question-text" style="font-size: 1.8rem; margin: 10px 0;">Pregunta...</h2>
+        
+        <p id="feedback-message"></p>
+
         <div id="options-container"></div>
     </div>
 
@@ -211,11 +232,6 @@
         ⚠️ Excepción: Si solo hay 1 bemol (Si) es <strong>Fa Mayor</strong>.</p>
 
         <p><strong>Sin nada:</strong> Do Mayor.</p>
-
-        <hr>
-        <p style="font-size: 0.9rem; color: #777;">
-            <em>*Nota: Al lado de cada respuesta verás una tonalidad menor (ej: La m). Es la "hermana menor" de la tonalidad mayor.</em>
-        </p>
     </div>
 </div>
 
@@ -238,9 +254,9 @@
     let currentIndex = 0;
     let score = 0;
     let gameMode = 'normal';
+    let canClick = true; // Para evitar doble click rápido
     const MAX_QUESTIONS = 10;
 
-    /* --- LÓGICA DEL JUEGO --- */
     function shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -253,6 +269,7 @@
         gameMode = mode;
         score = 0;
         currentIndex = 0;
+        canClick = true;
         currentQuestions = shuffle([...armaduras]).slice(0, MAX_QUESTIONS);
 
         document.getElementById('start-screen').classList.add('hidden');
@@ -262,10 +279,15 @@
     }
 
     function showQuestion() {
+        canClick = true;
         const questionData = currentQuestions[currentIndex];
         const qText = document.getElementById('question-text');
         const counter = document.getElementById('question-counter');
         const optionsDiv = document.getElementById('options-container');
+        const feedbackMsg = document.getElementById('feedback-message');
+        
+        // Limpiamos mensaje anterior
+        feedbackMsg.innerText = "";
         
         counter.innerText = `Pregunta ${currentIndex + 1} de ${MAX_QUESTIONS}`;
         optionsDiv.innerHTML = '';
@@ -292,16 +314,49 @@
             const btn = document.createElement('button');
             btn.innerText = opt;
             btn.className = 'btn';
-            btn.onclick = () => checkAnswer(opt, correctAnswer);
+            // Pasamos el botón mismo (this) y la respuesta correcta
+            btn.onclick = (e) => checkAnswer(opt, correctAnswer, e.target);
             optionsDiv.appendChild(btn);
         });
     }
 
-    function checkAnswer(selected, correct) {
-        if (selected === correct) score++;
-        currentIndex++;
-        if (currentIndex < MAX_QUESTIONS) showQuestion();
-        else endGame();
+    function checkAnswer(selected, correct, btnElement) {
+        if (!canClick) return; // Si ya pulsó, no hacemos nada
+        canClick = false; // Bloqueamos clicks
+
+        const feedbackMsg = document.getElementById('feedback-message');
+        const allButtons = document.querySelectorAll('#options-container .btn');
+
+        // Desactivamos todos los botones visualmente
+        allButtons.forEach(btn => btn.disabled = true);
+
+        if (selected === correct) {
+            score++;
+            btnElement.classList.add('correct');
+            feedbackMsg.innerHTML = "¡Muy bien! 🎉";
+            feedbackMsg.style.color = "#27ae60";
+        } else {
+            btnElement.classList.add('incorrect');
+            feedbackMsg.innerHTML = "¡Vaya! Era: <b>" + correct + "</b> 😅";
+            feedbackMsg.style.color = "#e74c3c";
+            
+            // Buscamos cuál era la correcta para iluminarla
+            allButtons.forEach(btn => {
+                if (btn.innerText === correct) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+        
+        // Esperamos 2 segundos antes de pasar a la siguiente
+        setTimeout(() => {
+            currentIndex++;
+            if (currentIndex < MAX_QUESTIONS) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }, 2000);
     }
 
     function endGame() {
@@ -324,12 +379,8 @@
         }
     }
 
-    /* --- CONTROL DE LA AYUDA --- */
     function toggleHelp(event) {
-        // Obtenemos el elemento
         const modal = document.getElementById('help-modal');
-        
-        // Comprobamos si tiene la clase hidden
         if (modal.classList.contains('hidden')) {
             modal.classList.remove('hidden');
         } else {
