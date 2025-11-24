@@ -5,109 +5,220 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entrenador de Armaduras Musicales</title>
     <style>
-        /* ESTILOS CSS (Diseño) */
+        /* --- ESTILOS GENERALES --- */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', 'Comic Sans MS', sans-serif; /* Fuente amigable */
+            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
             text-align: center;
+            color: #333;
         }
 
         .container {
             background: white;
             padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 550px;
             width: 90%;
+            position: relative;
         }
 
-        h1 { color: #333; }
-        p { font-size: 1.2rem; color: #555; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        h2 { color: #2980b9; }
+        p { font-size: 1.1rem; color: #555; line-height: 1.5; }
 
+        /* --- BOTONES --- */
         .btn {
             background-color: #6c5ce7;
             color: white;
             border: none;
-            padding: 15px 25px;
-            margin: 10px;
-            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 1rem;
-            transition: transform 0.2s, background 0.2s;
+            font-weight: bold;
+            transition: transform 0.1s, background 0.2s;
             width: 100%;
-            max-width: 300px;
+            max-width: 320px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .btn:hover { background-color: #5649c0; transform: translateY(-2px); }
+        .btn:hover { transform: scale(1.02); background-color: #5649c0; }
+        .btn:active { transform: scale(0.98); }
+
         .btn-secondary { background-color: #00b894; }
         .btn-secondary:hover { background-color: #00a383; }
 
+        .btn-help {
+            background-color: #f1c40f;
+            color: #333;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        .btn-help:hover { background-color: #f39c12; transform: rotate(10deg); }
+
         .hidden { display: none; }
 
-        /* Animación del Unicornio */
+        /* --- UNICORNIO --- */
         #unicorn-container {
-            font-size: 5rem;
-            margin-top: 20px;
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 6rem;
+            margin: 20px 0;
+            animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
         
-        /* Simulación de guiño con CSS */
-        .winking {
-            animation: winkAnim 1s infinite alternate;
-        }
+        .winking { animation: winkAnim 2s infinite; }
 
         @keyframes popIn {
-            from { transform: scale(0) rotate(-45deg); opacity: 0; }
-            to { transform: scale(1) rotate(0); opacity: 1; }
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
         
         @keyframes winkAnim {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.1) rotate(5deg); }
+            0%, 45% { transform: rotate(0deg); }
+            50% { transform: rotate(10deg) scale(1.1); }
+            55% { transform: rotate(-10deg) scale(1.1); }
+            100% { transform: rotate(0deg); }
         }
 
-        .score-text { font-weight: bold; font-size: 1.5rem; color: #2d3436; }
+        .score-text { font-size: 1.8rem; color: #2d3436; font-weight: bold; }
+
+        /* --- VENTANA MODAL DE AYUDA --- */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6); /* Fondo oscuro transparente */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 85%;
+            max-height: 85vh; /* Evita que sea más alto que la pantalla */
+            overflow-y: auto; /* Scroll si es muy largo */
+            text-align: left;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 4px solid #6c5ce7;
+        }
+
+        .close-modal {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            float: right;
+            font-weight: bold;
+        }
+
+        /* Tablas y cajas de ayuda */
+        .help-box {
+            background: #f0f3f4;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 5px solid #0984e3;
+        }
+        .highlight { color: #d63031; font-weight: bold; }
+        .mantra { font-weight: bold; letter-spacing: 1px; color: #2d3436; background: #dfe6e9; padding: 2px 6px; border-radius: 4px;}
+
     </style>
 </head>
 <body>
 
+<button class="btn btn-help" onclick="toggleHelp()" title="Ayuda">?</button>
+
 <div class="container">
     <div id="start-screen">
-        <h1>🎵 Quiz de Armaduras</h1>
-        <p>Elige el modo de juego:</p>
-        <button class="btn" onclick="startGame('normal')">Ver Armadura -> Decir Tono</button>
-        <button class="btn btn-secondary" onclick="startGame('reverse')">Ver Tono -> Decir Armadura</button>
+        <h1>🎵 Maestro de Armaduras</h1>
+        <p>¡Demuestra cuánto sabes de música!</p>
+        <p>Si sacas un 10... ¡habrá sorpresa! 🦄</p>
+        <br>
+        <button class="btn" onclick="startGame('normal')">🎲 Veo Armadura -> Digo Tono</button>
+        <button class="btn btn-secondary" onclick="startGame('reverse')">🧠 Veo Tono -> Digo Armadura</button>
     </div>
 
     <div id="quiz-screen" class="hidden">
-        <p id="question-counter">Pregunta 1 de 10</p>
-        <h2 id="question-text" style="font-size: 2rem; margin: 30px 0;">Pregunta...</h2>
+        <p id="question-counter" style="color: #888; font-size: 0.9rem;">Pregunta 1 de 10</p>
+        <h2 id="question-text" style="font-size: 1.8rem; margin: 20px 0;">Pregunta...</h2>
         <div id="options-container"></div>
     </div>
 
     <div id="result-screen" class="hidden">
-        <h2>¡Juego Terminado!</h2>
-        <p class="score-text">Tu nota: <span id="final-score">0</span> / 10</p>
+        <h2>🏁 ¡Final del juego!</h2>
+        <p class="score-text">Nota: <span id="final-score">0</span> / 10</p>
         
         <div id="unicorn-container" class="hidden">
-            🦄 <br> 
-            <span style="font-size: 1.5rem; color: #d63031;">¡Enhorabuena!</span>
+            🦄✨ <br> 
+            <span style="font-size: 1.5rem; color: #e17055;">¡ENHORABUENA!</span>
         </div>
         <div id="normal-message" class="hidden">
-            <p>¡Sigue practicando!</p>
+            <p>¡Casi! Revisa la ayuda y vuelve a intentar. 💪</p>
         </div>
 
         <button class="btn" onclick="location.reload()">Jugar otra vez</button>
     </div>
 </div>
 
+<div id="help-modal" class="modal hidden" onclick="toggleHelp(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal" onclick="toggleHelp()">Cerrar X</button>
+        <h2 style="margin-top:0">📖 Chuleta Musical</h2>
+
+        <div class="help-box">
+            <strong>1. El Orden Sagrado (¡Memorízalo!)</strong><br>
+            <ul>
+                <li>Sostenidos (#): <span class="mantra">Fa - Do - Sol - Re - La - Mi - Si</span></li>
+                <li>Bemoles (b): <span class="mantra">Si - Mi - La - Re - Sol - Do - Fa</span></li>
+            </ul>
+        </div>
+
+        <h3>🕵️ Trucos para acertar siempre</h3>
+        
+        <p><strong>Para los Sostenidos (#):</strong><br>
+        Mira el <u>último</u> sostenido y <strong>sube una nota</strong>.<br>
+        <em>Ej: Último es Fa# -> Subo 1 -> Sol Mayor.</em></p>
+
+        <p><strong>Para los Bemoles (b):</strong><br>
+        Mira el <u>penúltimo</u> bemol. ¡Esa es la tonalidad!<br>
+        <em>Ej: Si(b), Mi(b), La(b) -> Penúltimo es Mi(b) Mayor.</em><br>
+        ⚠️ Excepción: Si solo hay 1 bemol (Si) es <strong>Fa Mayor</strong>.</p>
+
+        <p><strong>Sin nada:</strong> Do Mayor.</p>
+
+        <hr>
+        <p style="font-size: 0.9rem; color: #777;">
+            <em>*Nota: Al lado de cada respuesta verás una tonalidad menor (ej: La m). Es la "hermana menor" de la tonalidad mayor.</em>
+        </p>
+    </div>
+</div>
+
 <script>
-    /* BASE DE DATOS DE ARMADURAS */
+    /* --- DATOS --- */
     const armaduras = [
         { alteracion: "Sin alteraciones", tono: "Do Mayor / La m" },
         { alteracion: "1 Sostenido (Fa#)", tono: "Sol Mayor / Mi m" },
@@ -124,10 +235,10 @@
     let currentQuestions = [];
     let currentIndex = 0;
     let score = 0;
-    let gameMode = 'normal'; // 'normal' o 'reverse'
+    let gameMode = 'normal';
     const MAX_QUESTIONS = 10;
 
-    // Función para mezclar array (Fisher-Yates shuffle)
+    /* --- LÓGICA DEL JUEGO --- */
     function shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -140,14 +251,11 @@
         gameMode = mode;
         score = 0;
         currentIndex = 0;
-        
-        // Preparamos las preguntas (mezclamos y cogemos 10 si hubiera más, o repetimos si hay pocas)
-        // Como tenemos 10 datos exactos, simplemente mezclamos el orden.
         currentQuestions = shuffle([...armaduras]).slice(0, MAX_QUESTIONS);
 
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('quiz-screen').classList.remove('hidden');
-        
+        document.getElementById('result-screen').classList.add('hidden');
         showQuestion();
     }
 
@@ -158,9 +266,8 @@
         const optionsDiv = document.getElementById('options-container');
         
         counter.innerText = `Pregunta ${currentIndex + 1} de ${MAX_QUESTIONS}`;
-        optionsDiv.innerHTML = ''; // Limpiar botones anteriores
+        optionsDiv.innerHTML = '';
 
-        // Configurar pregunta según modo
         let correctAnswer;
         if (gameMode === 'normal') {
             qText.innerText = questionData.alteracion;
@@ -170,22 +277,15 @@
             correctAnswer = questionData.alteracion;
         }
 
-        // Generar respuestas (1 correcta + 3 incorrectas)
         let options = [correctAnswer];
-        
-        // Conseguir respuestas falsas aleatorias
         while (options.length < 4) {
             let randomItem = armaduras[Math.floor(Math.random() * armaduras.length)];
             let wrongAnswer = (gameMode === 'normal') ? randomItem.tono : randomItem.alteracion;
-            
-            if (!options.includes(wrongAnswer)) {
-                options.push(wrongAnswer);
-            }
+            if (!options.includes(wrongAnswer)) options.push(wrongAnswer);
         }
 
-        options = shuffle(options); // Mezclar posición de botones
+        options = shuffle(options);
 
-        // Crear botones HTML
         options.forEach(opt => {
             const btn = document.createElement('button');
             btn.innerText = opt;
@@ -196,32 +296,41 @@
     }
 
     function checkAnswer(selected, correct) {
-        if (selected === correct) {
-            score++;
-        }
-        
+        if (selected === correct) score++;
         currentIndex++;
-        
-        if (currentIndex < MAX_QUESTIONS) {
-            showQuestion();
-        } else {
-            endGame();
-        }
+        if (currentIndex < MAX_QUESTIONS) showQuestion();
+        else endGame();
     }
 
     function endGame() {
         document.getElementById('quiz-screen').classList.add('hidden');
         document.getElementById('result-screen').classList.remove('hidden');
         
-        const scoreSpan = document.getElementById('final-score');
-        scoreSpan.innerText = score;
+        document.getElementById('final-score').innerText = score;
+        
+        const unicornDiv = document.getElementById('unicorn-container');
+        const normalMsg = document.getElementById('normal-message');
 
         if (score === MAX_QUESTIONS) {
-            const unicornDiv = document.getElementById('unicorn-container');
             unicornDiv.classList.remove('hidden');
-            unicornDiv.classList.add('winking'); // Añadir efecto
+            unicornDiv.classList.add('winking');
+            normalMsg.classList.add('hidden');
         } else {
-            document.getElementById('normal-message').classList.remove('hidden');
+            unicornDiv.classList.add('hidden');
+            unicornDiv.classList.remove('winking');
+            normalMsg.classList.remove('hidden');
+        }
+    }
+
+    /* --- CONTROL DE LA AYUDA --- */
+    function toggleHelp(event) {
+        // Si el evento viene del fondo oscuro (no del contenido), cerramos
+        // O si llamamos a la función directamente
+        const modal = document.getElementById('help-modal');
+        if (modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+        } else {
+            modal.classList.add('hidden');
         }
     }
 </script>
