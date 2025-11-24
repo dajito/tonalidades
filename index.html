@@ -26,6 +26,8 @@
             max-width: 550px;
             width: 90%;
             position: relative;
+            /* Transición suave de altura por si el contenido cambia */
+            transition: height 0.3s ease;
         }
 
         h1 { color: #2c3e50; margin-bottom: 10px; }
@@ -58,11 +60,21 @@
         .btn-secondary { background-color: #00b894; }
         .btn-secondary:hover:not(:disabled) { background-color: #00a383; }
 
+        /* Botón de Siguiente (Destacado) */
+        #next-btn {
+            background-color: #0984e3;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            border: 2px solid #74b9ff;
+        }
+        #next-btn:hover { background-color: #0076ce; }
+
         /* ESTILOS DE FEEDBACK (Correcto/Incorrecto) */
         .btn.correct {
             background-color: #27ae60 !important; /* Verde */
             box-shadow: 0 0 10px #2ecc71;
             transform: scale(1.02);
+            border: 2px solid #2ecc71;
         }
         .btn.incorrect {
             background-color: #e74c3c !important; /* Rojo */
@@ -93,7 +105,7 @@
         #feedback-message {
             font-weight: bold;
             font-size: 1.2rem;
-            min-height: 1.5rem; /* Para que no salte el contenido */
+            min-height: 1.5rem;
             margin: 10px 0;
         }
 
@@ -189,6 +201,8 @@
         <p id="feedback-message"></p>
 
         <div id="options-container"></div>
+
+        <button id="next-btn" class="btn hidden" onclick="nextQuestion()">Siguiente ➡</button>
     </div>
 
     <div id="result-screen" class="hidden">
@@ -213,24 +227,24 @@
         <h2 style="margin-top:0">📖 Chuleta Musical</h2>
 
         <div class="help-box">
-            <strong>1. El Orden Sagrado (¡Memorízalo!)</strong><br>
+            <strong>1. El Orden Sagrado</strong><br>
             <ul>
                 <li>Sostenidos (#): <span class="mantra">Fa - Do - Sol - Re - La - Mi - Si</span></li>
                 <li>Bemoles (b): <span class="mantra">Si - Mi - La - Re - Sol - Do - Fa</span></li>
             </ul>
         </div>
 
-        <h3>🕵️ Trucos para acertar siempre</h3>
+        <h3>🕵️ Trucos para acertar</h3>
         
-        <p><strong>Para los Sostenidos (#):</strong><br>
+        <p><strong>Sostenidos (#):</strong><br>
         Mira el <u>último</u> sostenido y <strong>sube una nota</strong>.<br>
         <em>Ej: Último es Fa# -> Subo 1 -> Sol Mayor.</em></p>
 
-        <p><strong>Para los Bemoles (b):</strong><br>
-        Mira el <u>penúltimo</u> bemol. ¡Esa es la tonalidad!<br>
+        <p><strong>Bemoles (b):</strong><br>
+        Mira el <u>penúltimo</u> bemol. ¡Esa es!<br>
         <em>Ej: Si(b), Mi(b), La(b) -> Penúltimo es Mi(b) Mayor.</em><br>
-        ⚠️ Excepción: Si solo hay 1 bemol (Si) es <strong>Fa Mayor</strong>.</p>
-
+        ⚠️ Excepción: Solo 1 bemol (Si) -> <strong>Fa Mayor</strong>.</p>
+        
         <p><strong>Sin nada:</strong> Do Mayor.</p>
     </div>
 </div>
@@ -254,7 +268,7 @@
     let currentIndex = 0;
     let score = 0;
     let gameMode = 'normal';
-    let canClick = true; // Para evitar doble click rápido
+    let canClick = true;
     const MAX_QUESTIONS = 10;
 
     function shuffle(array) {
@@ -285,9 +299,11 @@
         const counter = document.getElementById('question-counter');
         const optionsDiv = document.getElementById('options-container');
         const feedbackMsg = document.getElementById('feedback-message');
+        const nextBtn = document.getElementById('next-btn');
         
-        // Limpiamos mensaje anterior
+        // Resetear estado visual
         feedbackMsg.innerText = "";
+        nextBtn.classList.add('hidden'); // Ocultar botón siguiente al empezar pregunta
         
         counter.innerText = `Pregunta ${currentIndex + 1} de ${MAX_QUESTIONS}`;
         optionsDiv.innerHTML = '';
@@ -314,20 +330,20 @@
             const btn = document.createElement('button');
             btn.innerText = opt;
             btn.className = 'btn';
-            // Pasamos el botón mismo (this) y la respuesta correcta
             btn.onclick = (e) => checkAnswer(opt, correctAnswer, e.target);
             optionsDiv.appendChild(btn);
         });
     }
 
     function checkAnswer(selected, correct, btnElement) {
-        if (!canClick) return; // Si ya pulsó, no hacemos nada
-        canClick = false; // Bloqueamos clicks
+        if (!canClick) return;
+        canClick = false;
 
         const feedbackMsg = document.getElementById('feedback-message');
         const allButtons = document.querySelectorAll('#options-container .btn');
+        const nextBtn = document.getElementById('next-btn');
 
-        // Desactivamos todos los botones visualmente
+        // Desactivar botones
         allButtons.forEach(btn => btn.disabled = true);
 
         if (selected === correct) {
@@ -340,23 +356,30 @@
             feedbackMsg.innerHTML = "¡Vaya! Era: <b>" + correct + "</b> 😅";
             feedbackMsg.style.color = "#e74c3c";
             
-            // Buscamos cuál era la correcta para iluminarla
             allButtons.forEach(btn => {
-                if (btn.innerText === correct) {
-                    btn.classList.add('correct');
-                }
+                if (btn.innerText === correct) btn.classList.add('correct');
             });
         }
         
-        // Esperamos 2 segundos antes de pasar a la siguiente
-        setTimeout(() => {
-            currentIndex++;
-            if (currentIndex < MAX_QUESTIONS) {
-                showQuestion();
-            } else {
-                endGame();
-            }
-        }, 2000);
+        // Configurar botón Siguiente
+        if (currentIndex === MAX_QUESTIONS - 1) {
+            nextBtn.innerText = "Ver Nota Final 🏁";
+        } else {
+            nextBtn.innerText = "Siguiente Pregunta ➡";
+        }
+        
+        // Mostrar botón en lugar de esperar timeout
+        nextBtn.classList.remove('hidden');
+    }
+
+    // Nueva función para avanzar manualmente
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < MAX_QUESTIONS) {
+            showQuestion();
+        } else {
+            endGame();
+        }
     }
 
     function endGame() {
